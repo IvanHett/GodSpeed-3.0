@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Godspeed Inventory Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="index.html">
+                <i class="fas fa-boxes me-2"></i>Godspeed Inventory
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="items.html">
+                            <i class="fas fa-box me-1"></i>Items
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="reports.html">
+                            <i class="fas fa-chart-bar me-1"></i>Reports
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>Account
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="showProfile()">
+                                <i class="fas fa-user-cog me-2"></i>Profile
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid py-4">
+        <div class="row">
+            <!-- Page Header -->
+            <div class="col-12 mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-chart-bar me-2 text-primary"></i>Reports & Analytics
+                    </h1>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" onclick="refreshReports()">
+                            <i class="fas fa-sync-alt me-1"></i>Refresh
+                        </button>
+                        <button class="btn btn-success" onclick="exportReport()">
+                            <i class="fas fa-download me-1"></i>Export Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="col-12 mb-4">
+                <div class="row" id="report-summary-cards">
+                    <!-- Summary cards will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="col-12 mb-4">
+                <div class="row">
+                    <!-- Stock Level Chart -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-chart-pie me-2 text-primary"></i>Stock Level Distribution
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="stockLevelChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Items Chart -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-chart-bar me-2 text-primary"></i>Top Items by Quantity
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="topItemsChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Reports -->
+            <div class="col-12">
+                <div class="row">
+                    <!-- Low Stock Report -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Low Stock Items
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="low-stock-report">
+                                    <!-- Low stock items will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Out of Stock Report -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-times-circle me-2 text-danger"></i>Out of Stock Items
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="out-of-stock-report">
+                                    <!-- Out of stock items will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Table -->
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-table me-2 text-primary"></i>Complete Inventory Report
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="inventory-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Quantity</th>
+                                        <th>Status</th>
+                                        <th>Last Updated</th>
+                                        <th>Created Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Table data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="position-fixed top-50 start-50 translate-middle" style="display: none; z-index: 9999;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js"></script>
+    <script>
+        let stockLevelChart, topItemsChart;
+
+        // Initialize reports page on load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadReports();
+        });
+
+        async function loadReports() {
+            try {
+                const items = await API.getItems();
+                renderReportSummaryCards(items);
+                renderCharts(items);
+                renderDetailedReports(items);
+                renderInventoryTable(items);
+            } catch (error) {
+                console.error('Failed to load reports:', error);
+                Utils.showAlert('Failed to load reports data', 'danger');
+            }
+        }
+
+        function renderReportSummaryCards(items) {
+            const container = document.getElementById('report-summary-cards');
+            if (!container) return;
+
+            const totalItems = items.length;
+            const totalQuantity = items.reduce((sum, item) => sum + Number(item.quantity), 0);
+            const lowStockItems = items.filter(item => 
+                Number(item.quantity) > 0 && Number(item.quantity) < CONFIG.LOW_STOCK_THRESHOLD
+            );
+            const outOfStockItems = items.filter(item => Number(item.quantity) === 0);
+            const avgQuantity = totalItems > 0 ? Math.round(totalQuantity / totalItems) : 0;
+
+            const cardsHTML = `
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="summary-card info">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="card-value">${Utils.formatNumber(totalItems)}</div>
+                                <div class="card-label">Total Items</div>
+                            </div>
+                            <div class="card-icon">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="summary-card success">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="card-value">${Utils.formatNumber(totalQuantity)}</div>
+                                <div class="card-label">Total Quantity</div>
+                            </div>
+                            <div class="card-icon">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="summary-card warning">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="card-value">${Utils.formatNumber(avgQuantity)}</div>
+                                <div class="card-label">Average Quantity</div>
+                            </div>
+                            <div class="card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="summary-card ${outOfStockItems.length > 0 ? 'danger' : 'success'}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="card-value">${lowStockItems.length + outOfStockItems.length}</div>
+                                <div class="card-label">Items Need Attention</div>
+                            </div>
+                            <div class="card-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = cardsHTML;
+        }
+
+        function renderCharts(items) {
+            renderStockLevelChart(items);
+            renderTopItemsChart(items);
+        }
+
+        function renderStockLevelChart(items) {
+            const ctx = document.getElementById('stockLevelChart');
+            if (!ctx) return;
+
+            const inStock = items.filter(item => Number(item.quantity) >= CONFIG.LOW_STOCK_THRESHOLD).length;
+            const lowStock = items.filter(item => 
+                Number(item.quantity) > 0 && Number(item.quantity) < CONFIG.LOW_STOCK_THRESHOLD
+            ).length;
+            const outOfStock = items.filter(item => Number(item.quantity) === 0).length;
+
+            if (stockLevelChart) {
+                stockLevelChart.destroy();
+            }
+
+            stockLevelChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+                    datasets: [{
+                        data: [inStock, lowStock, outOfStock],
+                        backgroundColor: [
+                            '#198754',
+                            '#ffc107',
+                            '#dc3545'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTopItemsChart(items) {
+            const ctx = document.getElementById('topItemsChart');
+            if (!ctx) return;
+
+            const sortedItems = items
+                .sort((a, b) => Number(b.quantity) - Number(a.quantity))
+                .slice(0, 5);
+
+            const labels = sortedItems.map(item => item.name);
+            const data = sortedItems.map(item => Number(item.quantity));
+
+            if (topItemsChart) {
+                topItemsChart.destroy();
+            }
+
+            topItemsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Quantity',
+                        data: data,
+                        backgroundColor: 'rgba(13, 110, 253, 0.8)',
+                        borderColor: 'rgba(13, 110, 253, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderDetailedReports(items) {
+            renderLowStockReport(items);
+            renderOutOfStockReport(items);
+        }
+
+        function renderLowStockReport(items) {
+            const container = document.getElementById('low-stock-report');
+            if (!container) return;
+
+            const lowStockItems = items.filter(item => 
+                Number(item.quantity) > 0 && Number(item.quantity) < CONFIG.LOW_STOCK_THRESHOLD
+            );
+
+            if (lowStockItems.length === 0) {
+                container.innerHTML = '<p class="text-muted">No low stock items found.</p>';
+                return;
+            }
+
+            const itemsHTML = lowStockItems.map(item => `
+                <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded mb-2">
+                    <div>
+                        <span class="fw-medium">${item.name}</span>
+                        <br>
+                        <small class="text-muted">Last updated: ${new Date(item.updated_at).toLocaleDateString()}</small>
+                    </div>
+                    <span class="badge bg-warning text-dark">${item.quantity} left</span>
+                </div>
+            `).join('');
+
+            container.innerHTML = itemsHTML;
+        }
+
+        function renderOutOfStockReport(items) {
+            const container = document.getElementById('out-of-stock-report');
+            if (!container) return;
+
+            const outOfStockItems = items.filter(item => Number(item.quantity) === 0);
+
+            if (outOfStockItems.length === 0) {
+                container.innerHTML = '<p class="text-muted">No out of stock items found.</p>';
+                return;
+            }
+
+            const itemsHTML = outOfStockItems.map(item => `
+                <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded mb-2">
+                    <div>
+                        <span class="fw-medium">${item.name}</span>
+                        <br>
+                        <small class="text-muted">Last updated: ${new Date(item.updated_at).toLocaleDateString()}</small>
+                    </div>
+                    <span class="badge bg-danger">Out of Stock</span>
+                </div>
+            `).join('');
+
+            container.innerHTML = itemsHTML;
+        }
+
+        function renderInventoryTable(items) {
+            const tbody = document.querySelector('#inventory-table tbody');
+            if (!tbody) return;
+
+            const sortedItems = items.sort((a, b) => a.name.localeCompare(b.name));
+
+            const tableHTML = sortedItems.map(item => `
+                <tr>
+                    <td class="fw-medium">${item.name}</td>
+                    <td>
+                        <span class="fw-bold">${item.quantity}</span>
+                    </td>
+                    <td>
+                        ${getStatusBadge(item.quantity)}
+                    </td>
+                    <td>
+                        <small class="text-muted">
+                            ${new Date(item.updated_at).toLocaleDateString()}
+                        </small>
+                    </td>
+                    <td>
+                        <small class="text-muted">
+                            ${new Date(item.created_at).toLocaleDateString()}
+                        </small>
+                    </td>
+                </tr>
+            `).join('');
+
+            tbody.innerHTML = tableHTML;
+        }
+
+        function refreshReports() {
+            loadReports();
+            Utils.showAlert('Reports refreshed successfully!', 'success');
+        }
+
+        function exportReport() {
+            Utils.showAlert('Export feature coming soon!', 'info');
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('isLoggedIn');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function showProfile() {
+            alert('Profile feature coming soon!');
+        }
+    </script>
+</body>
+</html> 
